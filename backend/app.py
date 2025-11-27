@@ -4,16 +4,12 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import re   
-
-# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for Chrome extension
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('API_KEY'))
-
 # Mock mode for testing without API credits
 MOCK_MODE = os.getenv('MOCK_MODE', 'false').lower() == 'true'
 
@@ -30,18 +26,18 @@ def process_data():
         platform = data.get('platform', '')
         url = data.get('url', '')
         
-        # Clean up product info - remove excessive whitespace and blank lines
-        
+
+        #  remove  whitespace  blank lines
         if product_info:
             product_info = re.sub(r' +', ' ', product_info) # Replace multiple spaces 
             product_info = re.sub(r'\n+', '\n', product_info)# Replace multiple newlines 
             product_info = '\n'.join(line.strip() for line in product_info.split('\n') if line.strip())# Remove whitespace
         
-        # Clean up product title
+        # Clean  product title
         if product_title:
             product_title = ' '.join(product_title.split())
 
-        # Build context for ChatGPT
+        # CHATGPT Prompt
         context = f"""
 You are a helpful shopping assistant. A user is viewing a product and has a question about it.
 
@@ -77,7 +73,7 @@ Keep the answer length under 300 words.
                     }
                 ],
                 max_tokens=500,
-                temperature=0.5
+                temperature=0.5  # < higher is random- creativity level
             )
 
             result = response.choices[0].message.content
@@ -91,7 +87,7 @@ Keep the answer length under 300 words.
     except Exception as e:
         print(f"Error occurred: {str(e)}")  # Log the error
         import traceback
-        traceback.print_exc()  # Print full traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': str(e)

@@ -24,3 +24,5 @@ build/
 .DS_Store
 Thumbs.db
 plagiarism_check.py
+DFD_DIAGRAM.md
+DFD_MERMAID.md

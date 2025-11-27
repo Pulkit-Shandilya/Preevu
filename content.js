@@ -1,6 +1,5 @@
-// Content script that runs on e-commerce product pages
 
-// Scraping configuration for different e-commerce platforms
+// Scraping the shopping page thing
 const PLATFORM_SELECTORS = {
     amazon: {
         name: 'amazon',
@@ -79,12 +78,12 @@ function extractProductInfo() {
     let productInfo = '';
     let platform = '';
     
-    // Detect platform from URL
+    // Website URL :)
     for (const [key, config] of Object.entries(PLATFORM_SELECTORS)) {
         if (currentUrl.includes(key)) {
             platform = config.name;
             
-            // Extract title using multiple selectors
+            // Extract title 
             for (const selector of config.titleSelectors) {
                 const element = document.querySelector(selector);
                 if (element && element.textContent.trim()) {
@@ -93,7 +92,7 @@ function extractProductInfo() {
                 }
             }
             
-            // Extract product information using multiple selectors
+            // Extract product information 
             let allInfo = [];
             for (const { selector, label } of config.infoSelectors) {
                 const elements = document.querySelectorAll(selector);
@@ -114,7 +113,7 @@ function extractProductInfo() {
         }
     }
     
-    // Fallback if platform not recognized
+    // if weird shopping website
     if (!platform) {
         platform = 'unknown';
         productTitle = '';
@@ -137,7 +136,7 @@ function extractProductInfo() {
     return result;
 }
 
-// Listen for messages from popup or background script
+// message listerner. . .message forward karga
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'extractProductData') {
         const productData = extractProductInfo();
@@ -147,7 +146,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
 });
 
-// Auto-extract on page load and send to background
+// Automatic extrac. .. and sen  to the background file
 window.addEventListener('load', () => {
     setTimeout(() => {
         const productData = extractProductInfo();
@@ -157,5 +156,5 @@ window.addEventListener('load', () => {
                 data: productData
             });
         }
-    }, 2000); // Wait 2 seconds for page to fully load
+    }, 3000); // Wait 2 seconds for page to fully load
 });
