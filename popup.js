@@ -1,3 +1,17 @@
+// Preevu Configuration
+const PREEVU_CONFIG = {
+    API_ENDPOINT: 'http://localhost:5000/api/process',
+    HEALTH_ENDPOINT: 'http://localhost:5000/api/health',
+    REQUEST_TIMEOUT: 30000,
+    MAX_RETRIES: 3,
+    MESSAGES: {
+        NO_INPUT: 'No Input Provided,\nPlease enter some query about the product.',
+        EXTRACTING: 'Extracting product data...',
+        LOADING: 'Loading...',
+        ERROR_PREFIX: 'Error: '
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const sendButton = document.getElementById('sendButton');
     const inputField = document.getElementById('inputField');
@@ -13,12 +27,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputText = inputField.value;
         
         if (!inputText) {
-            responseDiv.textContent = 'No Input Provided,\nPlease enter some query about the product.';
+            responseDiv.textContent = PREEVU_CONFIG.MESSAGES.NO_INPUT;
             return;
         }
 
         try {
-            responseDiv.textContent = 'Extracting product data...';
+            responseDiv.textContent = PREEVU_CONFIG.MESSAGES.EXTRACTING;
             
             // Get current active tab
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -50,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function sendToBackend(query, productData) {
         try {
-            responseDiv.textContent = 'Loading...';
+            responseDiv.textContent = PREEVU_CONFIG.MESSAGES.LOADING;
             
             console.log('Sending to backend:', {
                 query,
@@ -60,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             // Send request to Python backend with both user query and product data
-            const response = await fetch('http://localhost:5000/api/process', {
+            const response = await fetch(PREEVU_CONFIG.API_ENDPOINT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             responseDiv.innerHTML = data.result;
             
         } catch (error) {
-            responseDiv.textContent = `Error: ${error.message}`;
+            responseDiv.textContent = `${PREEVU_CONFIG.MESSAGES.ERROR_PREFIX}${error.message}`;
             console.error('Error:', error);
         }
     }

@@ -7,11 +7,9 @@ import re
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for Chrome extension
+CORS(app)  
 
 client = OpenAI(api_key=os.getenv('API_KEY'))
-# Mock mode for testing without API credits
-MOCK_MODE = os.getenv('MOCK_MODE', 'false').lower() == 'true'
 
 @app.route('/api/process', methods=['POST'])
 def process_data():
@@ -20,68 +18,76 @@ def process_data():
     """
     try:
         data = request.get_json()
-        user_query = data.get('query', '')
-        product_title = data.get('productTitle', '')
-        product_info = data.get('productInfo', '')
-        platform = data.get('platform', '')
-        url = data.get('url', '')
+        
+        # Input validation
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        e_user_query = data.get('query', '')
+        e_product_title = data.get('productTitle', '')
+        e_product_info = data.get('productInfo', '')
+        e_platform = data.get('platform', '')
+        
+        # Validate required fields
+        if not e_user_query:
+            return jsonify({
+                'success': False,
+                'error': 'Query is required'
+            }), 400
         
 
-        #  remove  whitespace  blank lines
-        if product_info:
-            product_info = re.sub(r' +', ' ', product_info) # Replace multiple spaces 
-            product_info = re.sub(r'\n+', '\n', product_info)# Replace multiple newlines 
-            product_info = '\n'.join(line.strip() for line in product_info.split('\n') if line.strip())# Remove whitespace
+        # Clean and normalize text data
+        if e_product_info:
+            # Strip lines and remove blanks in single pass, then normalize whitespace
+            e_product_info = '\n'.join(line.strip() for line in e_product_info.split('\n') if line.strip())
         
-        # Clean  product title
-        if product_title:
-            product_title = ' '.join(product_title.split())
+        if e_product_title:
+            e_product_title = ' '.join(e_product_title.split())
 
-        # CHATGPT Prompt
+        # Build AI prompt
         context = f"""
 You are a helpful shopping assistant. A user is viewing a product and has a question about it.
 
-Product Platform: {platform}
-Product Title: {product_title}
-Product Information: {product_info[:2000]}
+Product Platform: {e_platform}
+Product Title: {e_product_title}
+Product Information: {e_product_info[:2000]}
 
-User Question: {user_query}
+User Question: {e_user_query}
 
-Answer the questions based on the product information available, and give the answer in concise points. If the information is not available, respond with "Information not available in the product description." 
-If there are better prices on some other reputable website, give that note at the end of the answer: "I did find better pricing on <url of the cheaper website>" if cheaper price is not found, omit this line.
+Answer the questions based on the product information available, and give the answer in concise points. 
+If the information is not available, respond with "Information not available in the product description." 
 
 Keep the answer length under 300 words.
 """
 
-        # Mock mode for testing
-        if MOCK_MODE:
-            result = f"[MOCK MODE - No API call made]\n\nProduct: {product_title}\nPlatform: {platform}\n\nYour question: {user_query}\n\nThis is a mock response. Enable OpenAI API to get real answers."
-        else:
-            # Call OpenAI API
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": f"""You are a helpful shopping assistant that answers questions about products based on their descriptions and details.
-                                        Give the outout as an HTML formatted response which can fit and render between <div> tags.
-                        """
-                    },
-                    {
-                        "role": "user",
-                        "content": context
-                    }
-                ],
-                max_tokens=500,
-                temperature=0.5  # < higher is random- creativity level
-            )
+        # Call OpenAI API
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""You are a helpful shopping assistant that answers questions about products based on their descriptions and details.
+                                    Give the outout as an HTML formatted response which can fit and render between <div> tags.
+                    """
+                },
+                {
+                    "role": "user",
+                    "content": context
+                }
+            ],
+            max_tokens=500,
+            temperature=0.6  # < higher is random- creativity level
+        )
 
-            result = response.choices[0].message.content
-
+        result = response.choices[0].message.content
+        
         return jsonify({
             'success': True,
             'result': result,
-            'platform': platform
+            'platform': e_platform
         })
     
     except Exception as e:

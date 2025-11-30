@@ -9,7 +9,8 @@ const PLATFORM_SELECTORS = {
             { selector: '.a-expander-content.a-expander-partial-collapse-content', label: 'Description' },
             { selector: '#productDetails_detailBullets_sections1', label: 'Details' },
             { selector: '#bookDescription_feature_div', label: 'Book Description' },
-            { selector: '#productDescription', label: 'Product Description' }
+            { selector: '#productDescription', label: 'Product Description' },
+            {selector: '#bylineInfo', label: 'Sub title / author / brand'}
         ]
     },
     flipkart: {

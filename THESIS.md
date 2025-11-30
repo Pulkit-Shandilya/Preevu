@@ -143,20 +143,23 @@ Large Language Models (LLMs) represent a paradigm shift in NLP, moving from rule
 
 The system follows a three-tier architecture:
 
-**Tier 1: Browser Extension (Client)**
-- Content Script Layer
-- Background Service Worker
-- Popup User Interface
+**Presentation Tier (Client):** The Chrome Extension itself, comprising the UI (popup/side panel), with the Input Box for the User Queries, and a button to start the Process. This tier includes:
+- Content Script Layer for DOM interaction and web scraping
+- Background Service Worker for state management
+- Popup User Interface for user interaction and query input
 
-**Tier 2: Flask Application Server (Backend)**
-- RESTful API endpoints
-- Request processing logic
-- External API integration
+**Application Tier (Server/API):** A backend server using Python Flask responsible for receiving requests, executing the web scraping logic coordination and data cleaning, and coordinating the NLP services. This tier acts as the system's central processing unit:
+- RESTful API endpoints (`/api/process`, `/api/health`)
+- Request processing and validation logic
+- Prompt engineering and context preparation
+- External API integration management
+- Response formatting and error handling
 
-**Tier 3: OpenAI API (External Service)**
-- GPT-4o-mini model
-- Natural language understanding
-- Response generation
+**Data Tier (Database/NLP Service):** Includes the database for storing metadata, user settings, and cache data, as well as the external NLP/LLM service (e.g., via API) which performs the intelligent question answering and response generation:
+- OpenAI GPT-4o-mini model for natural language processing
+- Contextual understanding and response generation
+- In-memory data storage (current implementation)
+- Future provisions for persistent database storage and caching
 
 ### 3.2 Data Flow Architecture
 
